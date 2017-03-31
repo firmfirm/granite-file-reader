@@ -60,9 +60,8 @@ Typical usage:
        *
        * @event file-read
        */
-      static get config() {
+      static get properties() {
         return {
-          properties: {
             /**
              *  The types of files that the browser can read
              *  Available types are :
@@ -93,10 +92,11 @@ Typical usage:
               type: Boolean,
               value: false
             }
-          },
+          }
+      }
 
-          observers: [],
-        }
+      static get observers() {
+        return [];
       }
 
       connectedCallback() {

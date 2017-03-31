@@ -16,7 +16,7 @@
   "homepage": "https://github.com/LostInBrittany/granite-file-reader",
   "ignore": [],
   "dependencies": {
-    "polymer": "Polymer/polymer#2.0-preview",
+    "polymer": "Polymer/polymer#2.0.0-rc.2",
     "iron-input": "PolymerElements/iron-input#2.0-preview"
   },
   "devDependencies": {
