@@ -131,6 +131,14 @@ Typical usage:
         var file, i, n = this.$.fileInput.files.length;
         for (i = 0; i < n; i++) {
           file = this.$.fileInput.files[i];
+          if (this.readAs === "file") {
+            this.dispatchEvent(new CustomEvent('file-read', {
+              detail: file,
+              bubbles: true,
+              composed: true,
+            }));
+            continue;
+          }
           var reader = new FileReader();
           var context = this;
           reader.onload = function (event) {
