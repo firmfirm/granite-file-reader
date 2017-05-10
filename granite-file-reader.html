@@ -109,8 +109,6 @@ Typical usage:
       }
 
       _onTap(evt) {
-        console.log("[granite-file-reader] _onTap", evt.target.localName);
-        console.dir(evt)
         // if it's the event on the light dom, I launch another on the granite-file-reader
         // (if I didn't tested it, it would loop...)
         if (evt.target.localName != "granite-file-reader" && evt.target.id != "fileInput") {
@@ -119,7 +117,6 @@ Typical usage:
           if (elem && document.createEvent) { // sanity check
             var evt = document.createEvent('MouseEvents');
             evt.initEvent('click', true, false);
-            console.log("[granite-file-reader] _onTap - dispatch");
             elem.dispatchEvent(evt);
           }
         }
@@ -130,18 +127,19 @@ Typical usage:
         if (!this.$.fileInput.files) {
           return;
         }
-        console.debug("[granite-file-reader] _onChange", this.$.fileInput.files);
 
         var file, i, n = this.$.fileInput.files.length;
         for (i = 0; i < n; i++) {
           file = this.$.fileInput.files[i];
-          console.debug("[granite-file-reader] _onChange", file);
           var reader = new FileReader();
           var context = this;
           reader.onload = function (event) {
             // The file's text will be printed here
-            console.debug("[granite-file-reader] _onChange", event.target.result);
-            context.dispatchEvent(new CustomEvent('file-read', event.target.result));
+            context.dispatchEvent(new CustomEvent('file-read', {
+              detail: event.target.result,
+              bubbles: true,
+              composed: true,
+            }));
           };
           switch (this.readAs) {
             case "binary":
