@@ -9,6 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -->
 <link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/mixins/gesture-event-listeners.html">
 
 <!--
 `<granite-file-reader>` is lightweight element to read a file from the filesystem
@@ -49,17 +50,12 @@ Typical usage:
 
 
   <script>
-    class GraniteFileReader extends Polymer.Element {
+    class GraniteFileReader extends Polymer.GestureEventListeners(Polymer.Element) {
 
       static get is() {
         return "granite-file-reader";
       }
 
-      /**
-       * Fired when a file has been read
-       *
-       * @event file-read
-       */
       static get properties() {
         return {
             /**
@@ -91,21 +87,34 @@ Typical usage:
             multiple: {
               type: Boolean,
               value: false
-            }
+            },
+
+            files: {
+              type: Array,
+              notify: true,
+              value() { return []; },
+            },
+
+            file: {
+              type: Object,
+              notify: true,
+              computed: '_computeFile(files.splices)',
+            },
           }
       }
 
-      static get observers() {
-        return [];
+      _computeFile(changeRecord) {
+        if (!changeRecord) return;
+        const arr = changeRecord.indexSplices[0].object;
+        if (arr.length) {
+          return arr[0];
+        }
+        return null;
       }
 
       connectedCallback() {
         super.connectedCallback();
-        requestAnimationFrame(this._installListeners.bind(this));
-      }
-
-      _installListeners() {
-        this.addEventListener('tap', this._onTap.bind(this));
+        Polymer.Gestures.addListener(this, 'tap', this._onTap.bind(this));
       }
 
       _onTap(evt) {
@@ -113,6 +122,7 @@ Typical usage:
         // (if I didn't tested it, it would loop...)
         if (evt.target.localName != "granite-file-reader" && evt.target.id != "fileInput") {
           // Inspired by https://github.com/winhowes/file-upload/
+          this.splice('files', 0, this.files.length);
           var elem = this.$.fileInput;
           if (elem && document.createEvent) { // sanity check
             var evt = document.createEvent('MouseEvents');
@@ -121,7 +131,6 @@ Typical usage:
           }
         }
       }
-
 
       _onChange(evt) {
         if (!this.$.fileInput.files) {
@@ -132,23 +141,12 @@ Typical usage:
         for (i = 0; i < n; i++) {
           file = this.$.fileInput.files[i];
           if (this.readAs === "file") {
-            this.dispatchEvent(new CustomEvent('file-read', {
-              detail: file,
-              bubbles: true,
-              composed: true,
-            }));
+            this.push('files', file);
             continue;
           }
           var reader = new FileReader();
           var context = this;
-          reader.onload = function (event) {
-            // The file's text will be printed here
-            context.dispatchEvent(new CustomEvent('file-read', {
-              detail: event.target.result,
-              bubbles: true,
-              composed: true,
-            }));
-          };
+          reader.onload = event => this.push('files', event.target.result);
           switch (this.readAs) {
             case "binary":
               reader.readAsBinaryString(file);
