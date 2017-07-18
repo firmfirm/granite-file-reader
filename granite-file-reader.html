@@ -88,7 +88,13 @@ Typical usage:
               type: Boolean,
               value: false
             },
-
+            /**
+             * Max single file size in bytes
+             */
+            maxFileSize: {
+              type: Number,
+              value: 1000000 //default size 1 MB
+            },
             files: {
               type: Array,
               notify: true,
@@ -141,6 +147,14 @@ Typical usage:
         var file, i, n = this.$.fileInput.files.length;
         for (i = 0; i < n; i++) {
           file = this.$.fileInput.files[i];
+          if (this.maxFileSize > 0 && file.size >= this.maxFileSize) {
+            this.dispatchEvent(new CustomEvent('maxFileSizeExceeded', {
+              detail: {
+                message: `Maximum file size is ${this.maxFileSize / 1000000} MB`
+              }
+            }));
+            break;
+          }
           if (this.readAs === "file") {
             this.push('files', file);
             continue;
