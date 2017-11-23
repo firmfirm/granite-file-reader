@@ -99,24 +99,22 @@ Typical usage:
               type: Array,
               notify: true,
               readOnly: true,
-              value() { return []; },
             },
 
             file: {
               type: Object,
               notify: true,
-              computed: '_computeFile(files.splices)',
+              computed: '_computeFile(files)',
             },
           }
       }
 
-      _computeFile(changeRecord) {
-        if (!changeRecord) return;
-        const arr = changeRecord.indexSplices[0].object;
-        if (arr.length) {
-          return arr[0];
+      _computeFile(files) {
+        if (!files) return;
+        if (files.length) {
+          return files[0];
         }
-        return null;
+        return;
       }
 
       connectedCallback() {
@@ -129,7 +127,6 @@ Typical usage:
         // (if I didn't tested it, it would loop...)
         if (evt.target.localName != "granite-file-reader" && evt.target.id != "fileInput") {
           // Inspired by https://github.com/winhowes/file-upload/
-          this.splice('files', 0, this.files.length);
           var elem = this.$.fileInput;
           if (elem && document.createEvent) { // sanity check
             var evt = document.createEvent('MouseEvents');
@@ -144,6 +141,8 @@ Typical usage:
           return;
         }
 
+        const newFiles = [];
+
         var file, i, n = this.$.fileInput.files.length;
         for (i = 0; i < n; i++) {
           file = this.$.fileInput.files[i];
@@ -156,12 +155,12 @@ Typical usage:
             break;
           }
           if (this.readAs === "file") {
-            this.push('files', file);
+            newFiles.push(file);
             continue;
           }
           var reader = new FileReader();
           var context = this;
-          reader.onload = event => this.push('files', event.target.result);
+          reader.onload = event => this._setFiles([...this.files, event.target.result]);
           switch (this.readAs) {
             case "binary":
               reader.readAsBinaryString(file);
@@ -177,6 +176,8 @@ Typical usage:
               reader.readAsText(file);
           };
         }
+
+        this._setFiles(newFiles);
 
       }
     }
