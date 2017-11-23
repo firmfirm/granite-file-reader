@@ -147,10 +147,9 @@ Typical usage:
         for (i = 0; i < n; i++) {
           file = this.$.fileInput.files[i];
           if (this.maxFileSize > 0 && file.size >= this.maxFileSize) {
-            this.dispatchEvent(new CustomEvent('maxFileSizeExceeded', {
-              detail: {
-                message: `Maximum file size is ${this.maxFileSize / 1000000} MB`
-              }
+            this.dispatchEvent(new CustomEvent('max-file-size-exceeded', {
+              detail: {maxFileSize: this.maxFileSize},
+              composed: true, bubbles: true,
             }));
             break;
           }
