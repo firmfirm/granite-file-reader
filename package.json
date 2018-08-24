@@ -1,6 +1,6 @@
 {
   "name": "@mkazlauskas/granite-file-reader",
-  "version": "3.0",
+  "version": "3.0.0",
   "description": "A lightweight element to read a file from the filesystem",
   "keywords": [
     "web-component",
